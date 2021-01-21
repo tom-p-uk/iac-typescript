@@ -23,7 +23,7 @@ resource "aws_instance" "bastion" {                     # resource blocks are fo
 }
 
 resource "aws_security_group" "bastion" {
-  name   = "${local.prefix}-bastion-inbound-outbound-access}"
+  name   = "${local.prefix}-bastion-inbound-outbound-access"
   vpc_id = aws_vpc.main.id
 
   ingress {

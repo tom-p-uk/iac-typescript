@@ -31,6 +31,3 @@ variable "ecr_image_proxy" {
   default     = "806645795579.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-proxy:latest" # if we ever want to deploy from local machine, the default will be used
 }
 
-variable "django_secret_key" {
-  description = "Secret key for Django app"
-}

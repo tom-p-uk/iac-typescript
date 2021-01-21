@@ -52,7 +52,6 @@ data "template_file" "api_container_definitions" {
   vars = {
     app_image         = var.ecr_image_api
     proxy_image       = var.ecr_image_proxy
-    django_secret_key = var.django_secret_key
     db_host           = aws_db_instance.main.address
     db_name           = aws_db_instance.main.name
     db_user           = aws_db_instance.main.username

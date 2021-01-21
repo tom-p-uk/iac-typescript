@@ -5,7 +5,6 @@
         "essential": true,
         "memoryReservation": 256,
         "environment": [
-            {"name": "DJANGO_SECRET_KEY", "value": "${django_secret_key}"},
             {"name": "DB_HOST", "value": "${db_host}"},
             {"name": "DB_NAME", "value": "${db_name}"},
             {"name": "DB_USER", "value": "${db_user}"},

@@ -12,7 +12,7 @@ resource "aws_db_subnet_group" "main" {
 }
 
 resource "aws_security_group" "rds" {
-  name   = "${local.prefix}-rds-inbound-access}"
+  name   = "${local.prefix}-rds-inbound-access"
   vpc_id = aws_vpc.main.id
 
   ingress {

@@ -59,6 +59,8 @@ jobs:
         run: |
           cd deploy/
           export TF_VAR_ecr_image_api=$ECR_REPO:$GITHUB_SHA
+          export TF_VAR_DB_PASSWORD=${{ secrets.TF_VAR_DB_PASSWORD }}
+          export TF_VAR_DB_USERNAME=${{ secrets.TF_VAR_DB_USERNAME }}
           terraform init
           terraform workspace select staging
           terraform apply -auto-approve
@@ -84,6 +86,8 @@ jobs:
         run: |
           cd deploy/
           export TF_VAR_ecr_image_api=${{ secrets.ECR_REPO }}:$GITHUB_SHA
+          export TF_VAR_DB_PASSWORD=${{ secrets.TF_VAR_DB_PASSWORD }}
+          export TF_VAR_DB_USERNAME=${{ secrets.TF_VAR_DB_USERNAME }}
           terraform init
           terraform workspace select staging || terraform workspace new staging
           terraform plan

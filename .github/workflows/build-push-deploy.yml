@@ -39,6 +39,7 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     container: hashicorp/terraform:0.12.21
+    needs: [build_and_push]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -58,6 +59,7 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     container: hashicorp/terraform:0.12.21
+    needs: [build_and_push, terraform_plan]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:

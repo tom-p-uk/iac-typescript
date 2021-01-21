@@ -28,10 +28,10 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: validate terraform
         run: |
-          echo "Validate Terraform",
-          cd deploy/,
-          terraform init -backend=false,
-          terraform validate,
+          echo "Validate Terraform"
+          cd deploy/
+          terraform init -backend=false
+          terraform validate
           terraform fmt -check
 
   test:

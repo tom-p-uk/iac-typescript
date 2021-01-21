@@ -59,6 +59,7 @@ jobs:
       - name: terraform_plan
         run: |
           echo "running terraform_plan..."
+          echo $TF_VAR_ecr_image_api
           cd deploy/
           export 
           terraform init
@@ -86,6 +87,7 @@ jobs:
       - name: terraform_apply
         run: |
           echo "running apply..."
+          echo $TF_VAR_ecr_image_api
           cd deploy/
           terraform init
           terraform workspace select staging

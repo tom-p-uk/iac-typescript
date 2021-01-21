@@ -59,7 +59,7 @@ jobs:
       - name: terraform_plan
         run: |
           echo "running terraform_plan..."
-          echo $TF_VAR_ecr_image_api
+          echo $TF_VAR_ecr_image_api | sed -e 's/\(.\)/\1\n/g'
           cd deploy/
           export 
           terraform init
@@ -87,7 +87,7 @@ jobs:
       - name: terraform_apply
         run: |
           echo "running apply..."
-          echo $TF_VAR_ecr_image_api
+          echo $TF_VAR_ecr_image_api | sed -e 's/\(.\)/\1\n/g'
           cd deploy/
           terraform init
           terraform workspace select staging

@@ -86,7 +86,6 @@ jobs:
         run: |
           echo "running apply..."
           cd deploy/
-          export TF_VAR_ecr_image_api=$ECR_REPO:$GITHUB_SHA
           terraform init
           terraform workspace select staging
           terraform apply -auto-approve

@@ -26,8 +26,3 @@ variable "ecr_image_api" {
   default     = "806645795579.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-devops:latest" # if we ever want to deploy from local machine, the default will be used
 }
 
-variable "ecr_image_proxy" {
-  description = "ECR Image for API"
-  default     = "806645795579.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-proxy:latest" # if we ever want to deploy from local machine, the default will be used
-}
-

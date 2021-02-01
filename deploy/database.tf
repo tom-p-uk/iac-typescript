@@ -1,5 +1,5 @@
 resource "aws_db_subnet_group" "main" {
-  name = "${local.prefix}-main" # possible glitch with AWS - in order to get name to show up, it needs to be tagged as well
+  name = "${local.prefix}-main"
   subnet_ids = [
     aws_subnet.private_a.id,
     aws_subnet.private_b.id
@@ -31,7 +31,7 @@ resource "aws_security_group" "rds" {
 resource "aws_db_instance" "main" {
   identifier              = "${local.prefix}-db"
   name                    = "recipe"
-  allocated_storage       = 20 # storage in gb
+  allocated_storage       = 20
   storage_type            = "gp2"
   engine                  = "postgres"
   engine_version          = "11.8"
@@ -41,7 +41,7 @@ resource "aws_db_instance" "main" {
   password                = var.db_password
   backup_retention_period = 0
   multi_az                = false
-  skip_final_snapshot     = true # aws creates a snapshot before db deletion but the name is not unique. destroy works first time, but second time fails as it tries to create a snapshot using an already existing name
+  skip_final_snapshot     = true
   vpc_security_group_ids  = [aws_security_group.rds.id]
 
   tags = merge(

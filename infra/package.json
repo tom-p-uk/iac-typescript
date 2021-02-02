@@ -13,6 +13,7 @@
     "diff": "cdktf diff",
     "deploy": "cdktf deploy",
     "deploy:ci": "cdktf deploy --auto-approve",
+    "destroy": "cdktf destroy",
     "compile": "tsc --pretty",
     "watch": "tsc -w",
     "test": "echo ok",

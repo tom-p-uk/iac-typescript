@@ -79,7 +79,7 @@ jobs:
         run: |
           echo "Running cdktf deploy..."
           export TF_VAR_ecr_image_api=${{ secrets.ECR_REPO }}:$GITHUB_SHA
-          apk add --update nodejs npm
+          apk add --update nghttp2-dev nodejs npm
           cd infra/
           npm i
           npm run build

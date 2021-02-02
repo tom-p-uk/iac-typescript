@@ -80,6 +80,6 @@ jobs:
           echo "Running Terraform apply..."
           export TF_VAR_ecr_image_api=${{ secrets.ECR_REPO }}:$GITHUB_SHA
           cd infra/
-          npm run install
+          npm install
           npm run build
           npm run deploy:ci

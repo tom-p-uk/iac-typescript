@@ -83,8 +83,8 @@ class ApiStack extends TerraformStack {
         const project = 'recipe-app-api-devops';
         const contact = 'email@someemail.com';
         const workspace = process.env.TF_workspace || 'staging';
-        const dbUsername = process.env.TF_db_username;
-        const dbPassword = process.env.TF_db_password;
+        const dbUsername = process.env.TF_VAR_db_username;
+        const dbPassword = process.env.TF_VAR_db_password;
 
         const commonTags: ITags = {
             Environment: workspace,
@@ -97,7 +97,7 @@ class ApiStack extends TerraformStack {
         const prefix = `${prefixShort}-${workspace}`;
         const bastionKeyName = 'recipe-app-api-devops-bastion';
 
-        const ecrImageApi =new TerraformVariable(this, 'ecr_image_api', {
+        const ecrImageApi = new TerraformVariable(this, 'ecr_image_api', {
             type: 'string',
             description: 'ECR Image for API',
             default: '806645795579.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-devops:latest'

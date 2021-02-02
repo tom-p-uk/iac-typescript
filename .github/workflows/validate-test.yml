@@ -7,18 +7,18 @@ on:
     branches: [main]
 
 jobs:
-  validate_terraform:
-    runs-on: ubuntu-latest
-    container: hashicorp/terraform:0.12.21
-    steps:
-      - uses: actions/checkout@v2
-      - name: validate terraform
-        run: |
-          echo "Validate Terraform"
-          cd deploy/
-          terraform init -backend=false
-          terraform validate
-          terraform fmt -check
+#   validate_terraform:
+#     runs-on: ubuntu-latest
+#     container: hashicorp/terraform:0.12.21
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: validate terraform
+#         run: |
+#           echo "Validate Terraform"
+#           cd deploy/
+#           terraform init -backend=false
+#           terraform validate
+#           terraform fmt -check
 
   test:
     runs-on: ubuntu-latest

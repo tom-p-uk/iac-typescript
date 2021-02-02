@@ -1,5 +1,4 @@
 import {App, TerraformStack, S3Backend} from 'cdktf'
-import {TerraformLocal} from 'cdktf'
 import {Construct} from 'constructs'
 import {DataAwsRegion} from './.gen/providers/aws/data-aws-region';
 import {AwsProvider} from './.gen/providers/aws';
@@ -38,7 +37,7 @@ interface ITags {
 
 interface IContainerDefinition {
     name: string;
-    image: TerraformVariable | string;
+    image: string;
     essential: boolean;
     memoryReservation: number;
     environment: IEnvironment[];
@@ -61,9 +60,9 @@ interface IPortMapping {
 interface ILogConfiguration {
     logDriver: string;
     options: {
-        awslogsGroup: string;
-        awslogsRegion: string;
-        awslogsStreamPrefix: string;
+        'awslogs-group': string;
+        'awslogs-region': string;
+        'awslogs-stream-prefix': string;
     }
 }
   
@@ -84,8 +83,8 @@ class ApiStack extends TerraformStack {
         const project = 'recipe-app-api-devops';
         const contact = 'email@someemail.com';
         const workspace = process.env.TF_workspace || 'staging';
-        const dbUsername = process.env.TF_db_username;
-        const dbPassword = process.env.TF_db_password;
+        const dbUsername = process.env.TF_VAR_db_username;
+        const dbPassword = process.env.TF_VAR_db_password;
 
         const commonTags: ITags = {
             Environment: workspace,
@@ -95,28 +94,28 @@ class ApiStack extends TerraformStack {
         };
         
         const prefixShort = 'raad';
-        const prefix = new TerraformLocal(this, 'prefix', `${prefixShort}-${workspace}`);
+        const prefix = `${prefixShort}-${workspace}`;
         const bastionKeyName = 'recipe-app-api-devops-bastion';
 
-        const ecrImageApi =new TerraformVariable(this, 'ecr_image_api', {
+        const ecrImageApi = new TerraformVariable(this, 'ecr_image_api', {
             type: 'string',
             description: 'ECR Image for API',
             default: '806645795579.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-devops:latest'
         });
 
-        const vpcMain = new Vpc(this, 'main', {
+        const vpcMain = new Vpc(this, 'vpc_main', {
             cidrBlock: '10.0.0.0/16',
             enableDnsSupport: true,
             enableDnsHostnames: true,
             tags: Object.assign({}, commonTags, {Name: `${prefix}-vpc`})
         });
 
-        const internetGatewayMain = new InternetGateway(this, 'main', {
+        const internetGateway = new InternetGateway(this, 'igw_main', {
             vpcId: vpcMain.id,
             tags: Object.assign({}, commonTags, {Name: `${prefix}-main`})
         });
 
-        const subnetPublicA = new Subnet(this, 'public_a', {
+        const subnetPublicA = new Subnet(this, 'subnet_public_a', {
             cidrBlock: '10.0.0.0/24',
             mapPublicIpOnLaunch: true,
             vpcId: vpcMain.id,
@@ -124,7 +123,7 @@ class ApiStack extends TerraformStack {
             tags: Object.assign({}, commonTags, {Name: `${prefix}-public-a`})
         });
 
-        const subnetPublicB = new Subnet(this, 'public_b', {
+        const subnetPublicB = new Subnet(this, 'subnet_public_b', {
             cidrBlock: '10.0.1.0/24',
             mapPublicIpOnLaunch: true,
             vpcId: vpcMain.id,
@@ -132,22 +131,22 @@ class ApiStack extends TerraformStack {
             tags: Object.assign({}, commonTags, {Name: `${prefix}-public-b`})
         });
 
-        const routeTablePublicA = new RouteTable(this, 'public_a', {
+        const routeTablePublicA = new RouteTable(this, 'rt_public_a', {
             vpcId: vpcMain.id,
             tags: Object.assign({}, commonTags, {Name: `${prefix}-public-a`})
         });
 
-        const routeTablePublicB = new RouteTable(this, 'public_b', {
+        const routeTablePublicB = new RouteTable(this, 'rt_public_b', {
             vpcId: vpcMain.id,
             tags: Object.assign({}, commonTags, {Name: `${prefix}-public-b`})
         });
 
-        new RouteTableAssociation(this, 'public_a', {
+        new RouteTableAssociation(this, 'rta_public_a', {
             subnetId: subnetPublicA.id,
             routeTableId: routeTablePublicA.id
         });
 
-        new RouteTableAssociation(this, 'public_b', {
+        new RouteTableAssociation(this, 'rta_public_b', {
             subnetId: subnetPublicB.id,
             routeTableId: routeTablePublicB.id
         });
@@ -155,7 +154,7 @@ class ApiStack extends TerraformStack {
         new Route(this, 'public_internet_access_a', {
             routeTableId: routeTablePublicA.id,
             destinationCidrBlock: '0.0.0.0/0',
-            gatewayId: internetGatewayMain.id,
+            gatewayId: internetGateway.id,
             timeouts: {
                 create: '5m'
             }
@@ -164,35 +163,35 @@ class ApiStack extends TerraformStack {
         new Route(this, 'public_internet_access_b', {
             routeTableId: routeTablePublicB.id,
             destinationCidrBlock: '0.0.0.0/0',
-            gatewayId: internetGatewayMain.id,
+            gatewayId: internetGateway.id,
             timeouts: {
                 create: '5m'
             }
         });
 
-        const eipPublicA = new Eip(this, 'public_a', {
+        const eipPublicA = new Eip(this, 'eip_public_a', {
             vpc: true,
             tags: Object.assign({}, commonTags, {Name: `${prefix}-public-a`})
         });
 
-        const eipPublicB = new Eip(this, 'public_b', {
+        const eipPublicB = new Eip(this, 'eip_public_b', {
             vpc: true,
             tags: Object.assign({}, commonTags, {Name: `${prefix}-public-b`})
         });
 
-        const natGatewayPublicA = new NatGateway(this, 'public_a', {
+        const natGatewayPublicA = new NatGateway(this, 'nat_public_a', {
             allocationId: eipPublicA.id,
             subnetId: subnetPublicA.id,
             tags: Object.assign({}, commonTags, {Name: `${prefix}-public-a`})
         });
 
-        const natGatewayPublicB = new NatGateway(this, 'public_b', {
+        const natGatewayPublicB = new NatGateway(this, 'nat_public_b', {
             allocationId: eipPublicB.id,
             subnetId: subnetPublicB.id,
             tags: Object.assign({}, commonTags, {Name: `${prefix}-public-b`})
         });
 
-        const subnetPrivateA = new Subnet(this, 'private_a', {
+        const subnetPrivateA = new Subnet(this, 'subnet_private_a', {
             cidrBlock: '10.0.10.0/24',
             mapPublicIpOnLaunch: true,
             vpcId: vpcMain.id,
@@ -200,7 +199,7 @@ class ApiStack extends TerraformStack {
             tags: Object.assign({}, commonTags, {Name: `${prefix}-public-a`})
         });
 
-        const subnetPrivateB = new Subnet(this, 'private_b', {
+        const subnetPrivateB = new Subnet(this, 'subnet_private_b', {
             cidrBlock: '10.0.11.0/24',
             mapPublicIpOnLaunch: true,
             vpcId: vpcMain.id,
@@ -208,27 +207,27 @@ class ApiStack extends TerraformStack {
             tags: Object.assign({}, commonTags, {Name: `${prefix}-public-b`})
         });
 
-        const routeTablePrivateA = new RouteTable(this, 'private_a', {
+        const routeTablePrivateA = new RouteTable(this, 'rt_private_a', {
             vpcId: vpcMain.id,
             tags: Object.assign({}, commonTags, {Name: `${prefix}-public-a`})
         });
 
-        const routeTablePrivateB = new RouteTable(this, 'private_b', {
+        const routeTablePrivateB = new RouteTable(this, 'rt_private_b', {
             vpcId: vpcMain.id,
             tags: Object.assign({}, commonTags, {Name: `${prefix}-public-a`})
         });
 
-        new RouteTableAssociation(this, 'private_a', {
+        new RouteTableAssociation(this, 'rta_private_a', {
             subnetId: subnetPrivateA.id,
             routeTableId: routeTablePrivateA.id
         });
 
-        new RouteTableAssociation(this, 'private_b', {
+        new RouteTableAssociation(this, 'rta_private_b', {
             subnetId: subnetPrivateB.id,
             routeTableId: routeTablePrivateB.id
         });
 
-        new Route(this, 'private_nternet_access_a', {
+        new Route(this, 'private_internet_access_a', {
             routeTableId: routeTablePrivateA.id,
             destinationCidrBlock: '0.0.0.0/0',
             natGatewayId: natGatewayPublicA.id,
@@ -237,7 +236,7 @@ class ApiStack extends TerraformStack {
             }
         });
 
-        new Route(this, 'private_nternet_access_b', {
+        new Route(this, 'private_internet_access_b', {
             routeTableId: routeTablePrivateB.id,
             destinationCidrBlock: '0.0.0.0/0',
             natGatewayId: natGatewayPublicB.id,
@@ -257,18 +256,18 @@ class ApiStack extends TerraformStack {
             owners: ['amazon'],
         });
 
-        const iamRoleBastion = new IamRole(this, 'bastion', {
+        const iamRoleBastion = new IamRole(this, 'bastion_iam_role', {
             name: `${prefix}-bastion`,
             assumeRolePolicy: JSON.stringify(assumeRolePolicy),
             tags: commonTags,
         });
 
-        const iamInstanceProfileBastion = new IamInstanceProfile(this, 'bastion', {
+        const iamInstanceProfileBastion = new IamInstanceProfile(this, 'bastion_iam_instance_profile', {
             name: `${prefix}-bastion-instance-profile`,
             role: iamRoleBastion.name
         });
 
-        const securityGroupBastion = new SecurityGroup(this, 'bastion', {
+        const securityGroupBastion = new SecurityGroup(this, 'bastion_sg', {
             name: `${prefix}-bastion-inbound-outbound-access`,
             vpcId: vpcMain.id,
             ingress: [
@@ -276,7 +275,12 @@ class ApiStack extends TerraformStack {
                     protocol: 'tcp',
                     fromPort: 22,
                     toPort: 22,
-                    cidrBlocks: ['0.0.0.0/0']
+                    cidrBlocks: ['0.0.0.0/0'],
+                    ipv6CidrBlocks: [],
+                    prefixListIds: [],
+                    securityGroups: [],
+                    description: '',
+                    selfAttribute: false
                 }
             ],
             egress: [
@@ -285,12 +289,22 @@ class ApiStack extends TerraformStack {
                     fromPort: 80,
                     toPort: 80,
                     cidrBlocks: ['0.0.0.0/0'],
+                    ipv6CidrBlocks: [],
+                    prefixListIds: [],
+                    securityGroups: [],
+                    description: '',
+                    selfAttribute: false
                 },
                 {
                     protocol: 'tcp',
                     fromPort: 443,
                     toPort: 443,
                     cidrBlocks: ['0.0.0.0/0'],
+                    ipv6CidrBlocks: [],
+                    prefixListIds: [],
+                    securityGroups: [],
+                    description: '',
+                    selfAttribute: false
                 },
                 {
                     protocol: 'tcp',
@@ -299,13 +313,18 @@ class ApiStack extends TerraformStack {
                     cidrBlocks: [
                         subnetPrivateA.cidrBlock,
                         subnetPrivateB.cidrBlock
-                    ]
+                    ],
+                    ipv6CidrBlocks: [],
+                    prefixListIds: [],
+                    securityGroups: [],
+                    description: '',
+                    selfAttribute: false
                 }
             ],
             tags: commonTags
         });
 
-        const instanceBastion = new Instance(this, 'bastion', {
+        const instanceBastion = new Instance(this, 'bastion_instance', {
             ami: dataAwsAmi.id,
             instanceType: 't2.micro',
             userData: `
@@ -329,11 +348,6 @@ class ApiStack extends TerraformStack {
             policyArn: 'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly'
         });
 
-        new IamInstanceProfile(this, 'bastion', {
-            name: `${prefix}-bastion-instance-profile`,
-            role: iamRoleBastion.name
-        });
-
         const securityGroupLb = new SecurityGroup(this, 'lb', {
             name: `${prefix}-lb`,
             vpcId: vpcMain.id,
@@ -343,6 +357,11 @@ class ApiStack extends TerraformStack {
                     fromPort: 80,
                     toPort: 80,
                     cidrBlocks: ['0.0.0.0/0'],
+                    ipv6CidrBlocks: [],
+                    prefixListIds: [],
+                    securityGroups: [],
+                    description: '',
+                    selfAttribute: false
                 }
             ],
             egress: [
@@ -351,6 +370,11 @@ class ApiStack extends TerraformStack {
                     fromPort: 8000,
                     toPort: 8000,
                     cidrBlocks: ['0.0.0.0/0'],
+                    ipv6CidrBlocks: [],
+                    prefixListIds: [],
+                    securityGroups: [],
+                    description: '',
+                    selfAttribute: false
                 }
             ],
             tags: commonTags
@@ -364,7 +388,12 @@ class ApiStack extends TerraformStack {
                     protocol: 'tcp',
                     fromPort: 8000,
                     toPort: 8000,
-                    cidrBlocks: [securityGroupLb.id]
+                    securityGroups: [securityGroupLb.id],
+                    cidrBlocks: [],
+                    ipv6CidrBlocks: [],
+                    prefixListIds: [],
+                    description: '',
+                    selfAttribute: false
                 },
             ],
             egress: [
@@ -372,7 +401,12 @@ class ApiStack extends TerraformStack {
                     protocol: 'tcp',
                     fromPort: 443,
                     toPort: 443,
-                    cidrBlocks: ['0.0.0.0/0']
+                    cidrBlocks: ['0.0.0.0/0'],
+                    ipv6CidrBlocks: [],
+                    prefixListIds: [],
+                    securityGroups: [],
+                    description: '',
+                    selfAttribute: false
                 },
                 {
                     protocol: 'tcp',
@@ -381,7 +415,12 @@ class ApiStack extends TerraformStack {
                     cidrBlocks: [
                         subnetPrivateA.cidrBlock,
                         subnetPrivateB.cidrBlock
-                    ]
+                    ],
+                    ipv6CidrBlocks: [],
+                    prefixListIds: [],
+                    securityGroups: [],
+                    description: '',
+                    selfAttribute: false
                 }
             ],
             tags: commonTags
@@ -398,13 +437,18 @@ class ApiStack extends TerraformStack {
                     securityGroups: [
                         securityGroupBastion.id,
                         securityGroupEcsService.id
-                    ]
+                    ],
+                    cidrBlocks: [],
+                    ipv6CidrBlocks: [],
+                    prefixListIds: [],
+                    description: '',
+                    selfAttribute: false
                 }
             ],
             tags: commonTags
         });
 
-        const dbSubnetGroupMain = new DbSubnetGroup(this, 'main', {
+        const dbSubnetGroupMain = new DbSubnetGroup(this, 'db_subnet_group_main', {
             name: `${prefix}-main`,
             subnetIds: [
                 subnetPrivateA.id,
@@ -413,7 +457,7 @@ class ApiStack extends TerraformStack {
             tags: Object.assign({}, commonTags, {Name: `${prefix}-main`})
         });
 
-        const dbInstanceMain = new DbInstance(this, 'main', {
+        const dbInstanceMain = new DbInstance(this, 'db_instance_main', {
             identifier: `${prefix}-db`,
             name: 'recipe',
             allocatedStorage: 20,
@@ -432,7 +476,7 @@ class ApiStack extends TerraformStack {
         });
 
 
-        const ecsClusterMain = new EcsCluster(this, 'main', {
+        const ecsClusterMain = new EcsCluster(this, 'ecs_cluster_main', {
             name: `${prefix}-cluster`,
             tags: commonTags
         });
@@ -450,7 +494,7 @@ class ApiStack extends TerraformStack {
             tags: commonTags
         });
 
-        new IamRolePolicyAttachment(this, 'task_execution_role', {
+        new IamRolePolicyAttachment(this, 'task_execution_role_attachment', {
             role: iamRoleTaskExecutionRole.name,
             policyArn: iamPolicyTaskExecutionRolePolicy.arn
         });
@@ -468,7 +512,7 @@ class ApiStack extends TerraformStack {
 
         const apiContainerDefinition: IContainerDefinition = {
             name: 'api',
-            image: ecrImageApi,
+            image: ecrImageApi.stringValue,
             essential: true,
             memoryReservation: 256,
             environment: [
@@ -480,9 +524,9 @@ class ApiStack extends TerraformStack {
             logConfiguration: {
                 logDriver: 'awslogs',
                 options: {
-                    awslogsGroup: cloudwatchLogGroupEcsTaskLogs.name,
-                    awslogsRegion: regionNameCurrent.name,
-                    awslogsStreamPrefix: 'api'
+                    'awslogs-group': cloudwatchLogGroupEcsTaskLogs.name,
+                    'awslogs-region': regionNameCurrent.name,
+                    'awslogs-stream-prefix': 'api'
                 }
             },
             portMappings: [
@@ -499,7 +543,6 @@ class ApiStack extends TerraformStack {
                 }
             ]
         };
-        
 
         const ecsTaskDefinitionApi = new EcsTaskDefinition(this, 'api', {
             family: `${prefix}-api`,
@@ -520,7 +563,7 @@ class ApiStack extends TerraformStack {
             tags: commonTags
         });
 
-        const lbTargetGroupApi = new LbTargetGroup(this, 'api', {
+        const lbTargetGroupApi = new LbTargetGroup(this, 'api_lb_target_group', {
             name: `${prefix}-api`,
             protocol: 'HTTP',
             vpcId: vpcMain.id,
@@ -533,7 +576,7 @@ class ApiStack extends TerraformStack {
             ]
         });
 
-        new EcsService(this, 'api', {
+        new EcsService(this, 'api_ecs_service', {
             name: `${prefix}-api`,
             cluster: ecsClusterMain.name,
             taskDefinition: ecsTaskDefinitionApi.family,
@@ -557,7 +600,7 @@ class ApiStack extends TerraformStack {
             ]
         });
 
-        const lbApi = new Lb(this, 'api', {
+        const lbApi = new Lb(this, 'api_lb', {
             name: `${prefix}-main`,
             loadBalancerType: 'application',
             subnets: [
@@ -568,7 +611,7 @@ class ApiStack extends TerraformStack {
             tags: commonTags
         });
 
-        new LbListener(this, 'api', {
+        new LbListener(this, 'api_lb_listener', {
             loadBalancerArn: lbApi.arn,
             port: 80,
             protocol: 'HTTP',

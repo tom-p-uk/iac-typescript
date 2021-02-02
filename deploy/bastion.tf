@@ -1,14 +1,14 @@
-data "aws_ami" "amazon_linux" { # data is something that we retrieve from aws. nothing is created. aws_ami needs to be exact, amazon_linux can be anything
+data "aws_ami" "amazon_linux" {
   most_recent = true
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-2.0.*-x86_64-gp2"] # get ami id from ui (create new instance -> choose ami). go to ec2 -> images -> paste id (name = amzn2-ami-hvm-2.0.*-x86_64-gp2). add wildcard for patch version
+    values = ["amzn2-ami-hvm-2.0.*-x86_64-gp2"]
   }
   owners = ["amazon"]
 }
 
-resource "aws_instance" "bastion" {                     # resource blocks are for creating things in aws
-  ami                    = data.aws_ami.amazon_linux.id # retrieve ami specified in data block above and use the id for it
+resource "aws_instance" "bastion" {
+  ami                    = data.aws_ami.amazon_linux.id
   instance_type          = "t2.micro"
   user_data              = file("./templates/bastion/user-data.sh")
   iam_instance_profile   = aws_iam_instance_profile.bastion.name
@@ -59,11 +59,6 @@ resource "aws_security_group" "bastion" {
 
   tags = local.common_tags
 }
-
-
-# 1: create role and define which entities can assume that role (specified in json file)
-# 2: attach an aws managed policy to that role
-# 3: create an instance profile to allow the passing of this role to an ec2 instance
 
 resource "aws_iam_role" "bastion" {
   name               = "${local.prefix}-bastion"

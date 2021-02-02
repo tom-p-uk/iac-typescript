@@ -1,6 +1,3 @@
-# variables.tf is used to declare variables, along with their types, descriptions and default values
-# terraform.tfvars is used to set the actual values of the variables
-
 variable "prefix" {
   default = "raad"
 }
@@ -23,11 +20,6 @@ variable "bastion_key_name" {
 
 variable "ecr_image_api" {
   description = "ECR Image for API"
-  default     = "806645795579.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-devops:latest" # if we ever want to deploy from local machine, the default will be used
-}
-
-variable "ecr_image_proxy" {
-  description = "ECR Image for API"
-  default     = "806645795579.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-proxy:latest" # if we ever want to deploy from local machine, the default will be used
+  default     = "806645795579.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-devops:latest"
 }
 

@@ -4,14 +4,9 @@ resource "aws_ecs_cluster" "main" {
   tags = local.common_tags
 }
 
-# the following 3 resources are for assigning permissions in order to start tasks (see task role vs task execution role)
-# 1: create policy that defines what task can do
-# 2: create role and define which entities can assume that role (specified in json file)
-# 3: attach policy to role
-
 resource "aws_iam_policy" "task_execution_role_policy" {
   name        = "${local.prefix}-task-exec-role-policy"
-  path        = "/" # path is used to organise and group iam policies (only available programatically, not via aws console)
+  path        = "/"
   description = "Allow retrieving of images and adding to logs"
   policy      = file("./templates/ecs/task-exec-role.json")
 }
@@ -28,17 +23,12 @@ resource "aws_iam_role_policy_attachment" "task_execution_role" {
   policy_arn = aws_iam_policy.task_execution_role_policy.arn
 }
 
-# the following role is for giving permissions to the task that it needs to operate at run time (see task role vs task execution role)
-# in other words, permissions that the running container will need AFTER it has started
-
 resource "aws_iam_role" "app_iam_role" {
   name               = "${local.prefix}-api-task"
   assume_role_policy = file("./templates/ecs/assume-role-policy.json")
 
   tags = local.common_tags
 }
-
-# cw group for application logs
 
 resource "aws_cloudwatch_log_group" "ecs_task_logs" {
   name = "${local.prefix}-api"
@@ -65,7 +55,7 @@ resource "aws_ecs_task_definition" "api" {
   family                   = "${local.prefix}-api"
   container_definitions    = data.template_file.api_container_definitions.rendered
   requires_compatibilities = ["FARGATE"]
-  network_mode             = "awsvpc" # to allow for inter-vpc connections (i.e., to database)
+  network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
   execution_role_arn       = aws_iam_role.task_execution_role.arn
@@ -98,7 +88,7 @@ resource "aws_security_group" "ecs_service" {
     ]
   }
 
-  ingress { # public inbound access to proxy, which runs on 8000
+  ingress {
     protocol        = "tcp"
     from_port       = 8000
     to_port         = 8000
@@ -123,29 +113,9 @@ resource "aws_ecs_service" "api" {
     security_groups = [aws_security_group.ecs_service.id]
   }
 
-  load_balancer { // tells ECS service to register new tasks with the specified target group
+  load_balancer {
     target_group_arn = aws_lb_target_group.api.arn
     container_name   = "api"
     container_port   = 8000
   }
 }
-
-# data "template_file" "ecs_s3_write_policy" {
-#   template = file("./templates/ecs/s3-write-policy.json.tpl")
-
-#   vars = {
-#     bucket_arn = aws_s3_bucket.app_public_files.arn
-#   }
-# }
-
-# resource "aws_iam_policy" "ecs_s3_access" {
-#   name        = "${local.prefix}-AppS3AccessPolicy"
-#   path        = "/"
-#   description = "Allow access to the recipe app S3 bucket"
-#   policy      = data.template_file.ecs_s3_write_policy.rendered
-# }
-
-# resource "aws_iam_role_policy_attachment" "ecs_s3_access" {
-#   role       = aws_iam_role.app_iam_role.name
-#   policy_arn = aws_iam_policy.ecs_s3_access.arn
-# }

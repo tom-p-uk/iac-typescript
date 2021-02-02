@@ -13,7 +13,7 @@ provider "aws" {
   version = "~> 2.50.0"
 }
 
-locals { // used for creating dynamic variables
+locals {
   prefix = "${var.prefix}-${terraform.workspace}"
   common_tags = {
     Environment = terraform.workspace

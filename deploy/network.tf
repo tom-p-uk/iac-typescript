@@ -138,7 +138,7 @@ resource "aws_nat_gateway" "public_b" {
 ############################################################
 
 resource "aws_subnet" "private_a" {
-  cidr_block        = "10.0.10.0/24" # reserve 10.0.0.0/24 - 10.0.9.0/24 for public subnets in case network grows in future
+  cidr_block        = "10.0.10.0/24"
   vpc_id            = aws_vpc.main.id
   availability_zone = "${data.aws_region.current.name}a"
 

@@ -13,9 +13,6 @@ services:
     build:
       dockerfile: Dockerfile.test
       context: ./api
-    # volumes:
-    #   - /app/node_modules
-    #   - ./server:/app
     environment:
       - DB_USER=docker
       - DB_PASS=docker

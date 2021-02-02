@@ -75,11 +75,11 @@ jobs:
       TF_VAR_db_username: ${{ secrets.TF_VAR_db_username }}
     steps:
       - uses: actions/checkout@v2
-      - name: terraform_apply
+      - name: cdktf_deploy
         run: |
-          echo "Running Terraform apply..."
+          echo "Running cdktf deploy..."
           export TF_VAR_ecr_image_api=${{ secrets.ECR_REPO }}:$GITHUB_SHA
           cd infra/
-          npm install
+          npm i
           npm run build
           npm run deploy:ci

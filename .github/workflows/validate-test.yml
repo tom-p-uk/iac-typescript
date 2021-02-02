@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
 
-# jobs:
+jobs:
 #   validate_terraform:
 #     runs-on: ubuntu-latest
 #     container: hashicorp/terraform:0.12.21

@@ -104,7 +104,7 @@ jobs:
           echo "Running terraform_apply job..."
           export TF_VAR_ecr_image_api=${{ secrets.ECR_REPO }}:$GITHUB_SHA
           apk add --update nghttp2-dev nodejs npm
-          cd infra/
+          cd infra-modules/
           npm i
           npm run build-and-synth
           cd cdktf.out/

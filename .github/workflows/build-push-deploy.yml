@@ -109,5 +109,5 @@ jobs:
           npm run build-and-synth
           cd cdktf.out/
           terraform init
-          terraform workspace select staging
+          terraform workspace select staging || terraform workspace new staging
           terraform apply -auto-approve

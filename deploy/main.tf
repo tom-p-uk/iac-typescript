@@ -1,10 +1,10 @@
 terraform {
   backend "s3" {
-    bucket         = "terraform-course-tfstate"
-    key            = "recipe-app.tfstate"
+    bucket         = "iac-ts-tfstate"
+    key            = "iac-ts.tfstate"
     region         = "us-east-1"
     encrypt        = true
-    dynamodb_table = "recipe-app-api-devops-tfstate-lock"
+    dynamodb_table = "iac-ts-tfstate-lock"
   }
 }
 

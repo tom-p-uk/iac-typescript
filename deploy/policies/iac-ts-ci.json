@@ -62,7 +62,7 @@
             "Sid": "AllowListS3StateBucket",
             "Effect": "Allow",
             "Action": "s3:ListBucket",
-            "Resource": "arn:aws:s3:::terraform-course-tfstate"
+            "Resource": "arn:aws:s3:::iac-ts-tfstate"
         },
         {
             "Sid": "AllowS3StateBucketAccess",
@@ -71,7 +71,7 @@
                 "s3:GetObject",
                 "s3:PutObject"
             ],
-            "Resource": "arn:aws:s3:::terraform-course-tfstate/*"
+            "Resource": "arn:aws:s3:::iac-ts-tfstate/*"
         },
         {
             "Sid": "LimitEC2Size",
@@ -92,7 +92,7 @@
             "Action": [
                 "ecr:*"
             ],
-            "Resource": "arn:aws:ecr:us-east-1:*:repository/recipe-app-api-devops"
+            "Resource": "arn:aws:ecr:us-east-1:*:repository/iac-ts"
         },
         {
             "Sid": "AllowStateLockingAccess",
@@ -103,7 +103,7 @@
                 "dynamodb:GetItem"
             ],
             "Resource": [
-                "arn:aws:dynamodb:*:*:table/recipe-app-api-devops-tfstate-lock"
+                "arn:aws:dynamodb:*:*:table/iac-ts-tfstate-lock"
             ]
         }
     ]

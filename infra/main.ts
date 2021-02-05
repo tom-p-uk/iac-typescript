@@ -1,4 +1,4 @@
-import {App, TerraformStack, S3Backend} from 'cdktf'
+import {App, TerraformStack, S3Backend, TerraformVariable, TerraformOutput} from 'cdktf'
 import {Construct} from 'constructs'
 import {DataAwsRegion} from './.gen/providers/aws/data-aws-region';
 import {AwsProvider} from './.gen/providers/aws';
@@ -22,8 +22,6 @@ import {Subnet} from './.gen/providers/aws/subnet';
 import {InternetGateway} from './.gen/providers/aws/internet-gateway';
 import {Vpc} from './.gen/providers/aws/vpc';
 import {Route} from './.gen/providers/aws';
-import {TerraformOutput} from 'cdktf';
-import {TerraformVariable} from 'cdktf'
 import {EcsService} from './.gen/providers/aws/ecs-service';
 import {EcsTaskDefinition} from './.gen/providers/aws/ecs-task-definition';
 import {CloudwatchLogGroup} from './.gen/providers/aws/cloudwatch-log-group';
@@ -69,7 +67,7 @@ interface ILogConfiguration {
   interface IEnvironment {
     name: string;
     value: string;
-  }
+}
 
 class ApiStack extends TerraformStack {
     constructor(scope: Construct, id: string) {
@@ -80,7 +78,7 @@ class ApiStack extends TerraformStack {
         });
         const regionNameCurrent = new DataAwsRegion(this, 'current', {});
 
-        const project = 'recipe-app-api-devops';
+        const project = 'iac-ts';
         const contact = 'email@someemail.com';
         const workspace = process.env.TF_workspace || 'staging';
         const dbUsername = process.env.TF_VAR_db_username;
@@ -93,14 +91,14 @@ class ApiStack extends TerraformStack {
             ManagedBy: 'Terraform',
         };
         
-        const prefixShort = 'raad';
+        const prefixShort = 'iac';
         const prefix = `${prefixShort}-${workspace}`;
-        const bastionKeyName = 'recipe-app-api-devops-bastion';
+        const bastionKeyName = 'iac-ts-bastion-key-pair';
 
         const ecrImageApi = new TerraformVariable(this, 'ecr_image_api', {
             type: 'string',
             description: 'ECR Image for API',
-            default: '806645795579.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-devops:latest'
+            default: '806645795579.dkr.ecr.us-east-1.amazonaws.com/iac-ts-api:latest'
         });
 
         const vpcMain = new Vpc(this, 'vpc_main', {
@@ -459,7 +457,7 @@ class ApiStack extends TerraformStack {
 
         const dbInstanceMain = new DbInstance(this, 'db_instance_main', {
             identifier: `${prefix}-db`,
-            name: 'recipe',
+            name: 'iac',
             allocatedStorage: 20,
             storageType: 'gp2',
             engine: 'postgres',
@@ -642,11 +640,11 @@ const app = new App();
 const stack = new ApiStack(app, 'typescript-cdktf-aws');
 
 new S3Backend(stack, {
-    bucket: 'terraform-course-tfstate',
-    key: 'recipe-app.tfstate',
+    bucket: 'iac-ts-tfstate',
+    key: 'iac-ts.tfstate',
     region: 'us-east-1',
     encrypt: true,
-    dynamodbTable: 'recipe-app-api-devops-tfstate-lock'
+    dynamodbTable: 'iac-ts-tfstate-lock'
 });
 
 app.synth();

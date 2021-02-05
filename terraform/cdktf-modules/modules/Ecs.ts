@@ -9,10 +9,10 @@ import {IamPolicy} from './../.gen/providers/aws/iam-policy';
 import {EcsCluster} from './../.gen/providers/aws/ecs-cluster';
 import taskExecRolePolicy from '../policies/taskExecRole';
 import assumeRolePolicy from '../policies/assumeRolePolicy';
-import Network from './network';
-import LoadBalancer from './load-balancer';
-import Database from './database';
-import ElasticContainerServiceSg from './ecsSg';
+import Network from './Network';
+import LoadBalancer from './LoadBalancer';
+import Database from './Database';
+import ElasticContainerServiceSg from './EcsSg';
 import {IOptions} from '../main';
 
 interface IContainerDefinition {

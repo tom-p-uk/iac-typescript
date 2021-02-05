@@ -3,8 +3,8 @@ import {LbListener} from './../.gen/providers/aws/lb-listener';
 import {LbTargetGroup} from './../.gen/providers/aws/lb-target-group';
 import {Lb} from './../.gen/providers/aws/lb';
 import {SecurityGroup} from './../.gen/providers/aws/security-group';
+import Network from './Network';
 import {IOptions} from '../main';
-import Network from './network';
 
 class LoadBalancer {
     public lb: Lb;

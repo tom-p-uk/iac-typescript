@@ -2,9 +2,9 @@ import {Construct} from 'constructs';
 import {DbInstance} from './../.gen/providers/aws/db-instance';
 import {DbSubnetGroup} from './../.gen/providers/aws/db-subnet-group';
 import {SecurityGroup} from './../.gen/providers/aws/security-group';
-import Network from './network';
-import Bastion from './bastion';
-import ElasticContainerServiceSg from './ecsSg';
+import Network from './Network';
+import Bastion from './Bastion';
+import ElasticContainerServiceSg from './EcsSg';
 import {IOptions} from '../main';
 
 class Database {

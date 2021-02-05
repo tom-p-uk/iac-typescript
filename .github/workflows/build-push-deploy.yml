@@ -21,7 +21,7 @@ jobs:
         run: |
           apk add python3
           pip3 install awscli
-          docker build --compress -t ${{ secrets.ECR_REPO }}:$GITHUB_SHA ./api
+          docker build --compress -t ${{ secrets.ECR_REPO }}:$GITHUB_SHA .
           $(aws ecr get-login --no-include-email --region us-east-1)
           docker push ${{ secrets.ECR_REPO }}:$GITHUB_SHA
           docker tag ${{ secrets.ECR_REPO }}:$GITHUB_SHA ${{ secrets.ECR_REPO }}:latest
@@ -104,7 +104,7 @@ jobs:
           echo "Running terraform_apply job..."
           export TF_VAR_ecr_image_api=${{ secrets.ECR_REPO }}:$GITHUB_SHA
           apk add --update nghttp2-dev nodejs npm
-          cd infra-modules/
+          cd terraform/cdktf-modules/
           npm i
           npm run build-and-synth
           cd cdktf.out/

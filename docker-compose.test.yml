@@ -12,7 +12,7 @@ services:
   api_test:
     build:
       dockerfile: Dockerfile.test
-      context: ./api
+      context: .
     environment:
       - DB_USER=docker
       - DB_PASS=docker

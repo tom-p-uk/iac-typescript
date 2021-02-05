@@ -2,13 +2,13 @@ import {App, TerraformStack, S3Backend} from 'cdktf'
 import {Construct} from 'constructs'
 import {DataAwsRegion} from './.gen/providers/aws/data-aws-region';
 import {AwsProvider} from './.gen/providers/aws';
-import Network from './modules/network';
-import Bastion from './modules/bastion';
-import Database from './modules/database';
-import ElasticContainerService from './modules/ecs';
-import LoadBalancer from './modules/load-balancer';
-import ElasticContainerServiceSg from './modules/ecsSg';
-import Outputs from './modules/outputs';
+import Network from './modules/Network';
+import Bastion from './modules/Bastion';
+import Database from './modules/Database';
+import ElasticContainerService from './modules/Ecs';
+import LoadBalancer from './modules/LoadBalancer';
+import ElasticContainerServiceSg from './modules/EcsSg';
+import Outputs from './modules/Outputs';
 
 export interface ITags {
     [key: string]: string 

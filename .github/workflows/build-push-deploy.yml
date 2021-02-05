@@ -1,9 +1,12 @@
 name: build, push and deploy
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - validate and test
+    types:
+      - completed:
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   build_and_push:
@@ -14,7 +17,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     steps:
       - uses: actions/checkout@v2
-      - name: build_and_push
+      - name: Build image and push to ECR
         run: |
           apk add python3
           pip3 install awscli
@@ -64,7 +67,28 @@ jobs:
   #         terraform workspace select staging
   #         terraform apply -auto-approve
 
-  cdktf_deploy:
+  # cdktf_deploy:
+  #   runs-on: ubuntu-latest
+  #   container: hashicorp/terraform:0.13.4
+  #   needs: [build_and_push]
+  #   env:
+  #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #     TF_VAR_db_password: ${{ secrets.TF_VAR_db_password }}
+  #     TF_VAR_db_username: ${{ secrets.TF_VAR_db_username }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: cdktf_deploy
+  #       run: |
+  #         echo "Running cdktf deploy..."
+  #         export TF_VAR_ecr_image_api=${{ secrets.ECR_REPO }}:$GITHUB_SHA
+  #         apk add --update nghttp2-dev nodejs npm
+  #         cd infra/
+  #         npm i
+  #         npm run build
+  #         npm run deploy:ci
+
+  terraform_apply:
     runs-on: ubuntu-latest
     container: hashicorp/terraform:0.13.4
     needs: [build_and_push]
@@ -75,12 +99,15 @@ jobs:
       TF_VAR_db_username: ${{ secrets.TF_VAR_db_username }}
     steps:
       - uses: actions/checkout@v2
-      - name: cdktf_deploy
+      - name: Terraform apply
         run: |
-          echo "Running cdktf deploy..."
+          echo "Running terraform_apply job..."
           export TF_VAR_ecr_image_api=${{ secrets.ECR_REPO }}:$GITHUB_SHA
           apk add --update nghttp2-dev nodejs npm
           cd infra/
           npm i
-          npm run build
-          npm run deploy:ci
+          npm run build-and-synth
+          cd cdktf.out/
+          terraform init
+          terraform workspace select staging
+          terraform apply -auto-approve

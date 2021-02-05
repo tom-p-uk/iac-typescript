@@ -1,16 +1,23 @@
-import {lbApi} from './load-balancer';
-import {instanceBastion} from './bastion';
 import {TerraformOutput} from 'cdktf';
-import {dbInstanceMain} from './database';
+import {Construct} from 'constructs';
+import Database from './database';
+import Bastion from './bastion';
+import LoadBalancer from './load-balancer';
 
-new TerraformOutput(this, 'db_host', {
-    value: dbInstanceMain.address
-});
+class Outputs {
+    constructor(scope: Construct, database: Database, bastion: Bastion, loadBalancer: LoadBalancer) {
+        new TerraformOutput(scope, 'db_host', {
+            value: database.dbInstance.address
+        });
 
-new TerraformOutput(this, 'bastion_host', {
-    value: instanceBastion.publicDns
-});
+        new TerraformOutput(scope, 'bastion_host', {
+            value: bastion.instanceBastion.publicDns
+        });
 
-new TerraformOutput(this, 'api_endpoint', {
-    value: lbApi.dnsName
-});
+        new TerraformOutput(scope, 'api_endpoint', {
+            value: loadBalancer.lb.dnsName
+        });
+    }
+}
+
+export default Outputs;

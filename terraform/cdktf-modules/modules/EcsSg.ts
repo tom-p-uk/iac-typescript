@@ -1,8 +1,8 @@
 import {Construct} from 'constructs';
 import {SecurityGroup} from '../.gen/providers/aws/security-group';
+import LoadBalancer from './LoadBalancer';
+import Network from './Network';
 import {IOptions} from '../main';
-import LoadBalancer from './load-balancer';
-import Network from './network';
 
 class ElasticContainerServiceSg {
     public securityGroup: SecurityGroup;

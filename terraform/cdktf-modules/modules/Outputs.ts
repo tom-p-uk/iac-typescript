@@ -1,8 +1,8 @@
 import {TerraformOutput} from 'cdktf';
 import {Construct} from 'constructs';
-import Database from './database';
-import Bastion from './bastion';
-import LoadBalancer from './load-balancer';
+import Database from './Database';
+import Bastion from './Bastion';
+import LoadBalancer from './LoadBalancer';
 
 class Outputs {
     constructor(scope: Construct, database: Database, bastion: Bastion, loadBalancer: LoadBalancer) {

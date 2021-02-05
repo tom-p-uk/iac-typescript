@@ -6,8 +6,8 @@ import {IamInstanceProfile} from './../.gen/providers/aws/iam-instance-profile';
 import {Instance} from '../.gen/providers/aws';
 import {DataAwsAmi} from '.././.gen/providers/aws/data-aws-ami';
 import assumeRolePolicy from '../policies/assumeRolePolicy';
+import Network from './Network';
 import {IOptions} from '../main';
-import Network from './network';
 
 class Bastion {
     public instanceBastion: Instance;

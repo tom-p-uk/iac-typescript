@@ -5,7 +5,7 @@ on:
     workflows:
       - validate and test
     types:
-      - completed:
+      - completed
     branches: [main]
 
 jobs:

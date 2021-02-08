@@ -9,23 +9,23 @@ on:
     branches: [main]
 
 jobs:
-  build_and_push:
-    runs-on: ubuntu-latest
-    container: docker:19.03.5
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build image and push to ECR
-        run: |
-          apk add python3
-          pip3 install awscli
-          docker build --compress -t ${{ secrets.ECR_REPO }}:$GITHUB_SHA .
-          $(aws ecr get-login --no-include-email --region us-east-1)
-          docker push ${{ secrets.ECR_REPO }}:$GITHUB_SHA
-          docker tag ${{ secrets.ECR_REPO }}:$GITHUB_SHA ${{ secrets.ECR_REPO }}:latest
-          docker push ${{ secrets.ECR_REPO }}:latest
+  # build_and_push:
+  #   runs-on: ubuntu-latest
+  #   container: docker:19.03.5
+  #   env:
+  #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Build image and push to ECR
+  #       run: |
+  #         apk add python3
+  #         pip3 install awscli
+  #         docker build --compress -t ${{ secrets.ECR_REPO }}:$GITHUB_SHA .
+  #         $(aws ecr get-login --no-include-email --region us-east-1)
+  #         docker push ${{ secrets.ECR_REPO }}:$GITHUB_SHA
+  #         docker tag ${{ secrets.ECR_REPO }}:$GITHUB_SHA ${{ secrets.ECR_REPO }}:latest
+  #         docker push ${{ secrets.ECR_REPO }}:latest
 
   # terraform_apply:
   #   runs-on: ubuntu-latest
@@ -71,7 +71,7 @@ jobs:
   terraform_apply:
     runs-on: ubuntu-latest
     container: hashicorp/terraform:0.13.4
-    needs: [build_and_push]
+    # needs: [build_and_push]
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -90,4 +90,4 @@ jobs:
           cd cdktf.out/
           terraform init
           terraform workspace select staging || terraform workspace new staging
-          terraform apply -auto-approve
+          terraform destroy -auto-approve

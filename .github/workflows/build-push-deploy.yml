@@ -9,44 +9,29 @@ on:
     branches: [main]
 
 jobs:
-  # build_and_push:
-  #   runs-on: ubuntu-latest
-  #   container: docker:19.03.5
-  #   env:
-  #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Build image and push to ECR
-  #       run: |
-  #         apk add python3
-  #         pip3 install awscli
-  #         docker build --compress -t ${{ secrets.ECR_REPO }}:$GITHUB_SHA .
-  #         $(aws ecr get-login --no-include-email --region us-east-1)
-  #         docker push ${{ secrets.ECR_REPO }}:$GITHUB_SHA
-  #         docker tag ${{ secrets.ECR_REPO }}:$GITHUB_SHA ${{ secrets.ECR_REPO }}:latest
-  #         docker push ${{ secrets.ECR_REPO }}:latest
+  build_and_push:
+    runs-on: ubuntu-latest
+    container: docker:19.03.5
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build image and push to ECR
+        run: |
+          apk add python3
+          pip3 install awscli
+          docker build --compress -t ${{ secrets.ECR_REPO }}:$GITHUB_SHA .
+          $(aws ecr get-login --no-include-email --region us-east-1)
+          docker push ${{ secrets.ECR_REPO }}:$GITHUB_SHA
+          docker tag ${{ secrets.ECR_REPO }}:$GITHUB_SHA ${{ secrets.ECR_REPO }}:latest
+          docker push ${{ secrets.ECR_REPO }}:latest
 
-  # terraform_apply:
-  #   runs-on: ubuntu-latest
-  #   container: hashicorp/terraform:0.12.21
-  #   needs: [build_and_push, terraform_plan]
-  #   env:
-  #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #     TF_VAR_db_password: ${{ secrets.TF_VAR_db_password }}
-  #     TF_VAR_db_username: ${{ secrets.TF_VAR_db_username }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: terraform_apply
-  #       run: |
-  #         echo "Running Terraform apply..."
-  #         export TF_VAR_ecr_image_api=${{ secrets.ECR_REPO }}:$GITHUB_SHA
-  #         cd deploy/
-  #         terraform init
-  #         terraform workspace select staging || terraform workspace new staging
-  #         terraform apply -auto-approve
 
+  ## 
+  ## The following step allows infrastructure to be deployed via NPM script (still requires Terraform binary, hence Terraform base image)
+  ## Commented out in favour of tradtional `terraform apply` command
+  ##
   # cdktf_deploy:
   #   runs-on: ubuntu-latest
   #   container: hashicorp/terraform:0.13.4
@@ -71,7 +56,7 @@ jobs:
   terraform_apply:
     runs-on: ubuntu-latest
     container: hashicorp/terraform:0.13.4
-    # needs: [build_and_push]
+    needs: [build_and_push]
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -90,4 +75,4 @@ jobs:
           cd cdktf.out/
           terraform init
           terraform workspace select staging || terraform workspace new staging
-          terraform destroy -auto-approve
+          terraform apply -auto-approve

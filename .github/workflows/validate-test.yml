@@ -28,6 +28,6 @@ jobs:
       - name: test
         run: |
           echo "Test and Lint"
-          apk add python3-dev libffi-dev openssl-dev gcc libc-dev make
+          apk add python3-dev musl-dev libffi-dev openssl-dev gcc cargo libc-dev make
           pip3 install -I docker-compose==1.26.2
           docker-compose -f docker-compose.test.yml run api_test
